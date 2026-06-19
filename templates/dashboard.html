@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - 悦己</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            padding: 8px;
+        }
+
+        .module-entry {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-entry::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .module-entry:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .module-entry:hover::before {
+            transform: scaleX(1);
+        }
+
+        .module-entry-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .module-entry-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .module-entry-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .module-entry-desc {
+            font-size: 0.95rem;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .module-entry-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .module-entry-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--primary-light);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .module-entry-arrow {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .module-entry:hover .module-entry-arrow {
+            background: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08));
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 20px;
+            padding: 32px 40px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12), transparent 70%);
+            animation: bannerGlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes bannerGlow {
+            0% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            100% { transform: scale(1.3) rotate(15deg); opacity: 0.7; }
+        }
+
+        .welcome-banner h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner p {
+            color: var(--gray);
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="app-page">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span class="sidebar-title">悦己</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>我的主页</span>
+            </a>
+            <a href="{{ url_for('entertainment') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>娱乐板块</span>
+            </a>
+            <a href="{{ url_for('profile') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>个人信息</span>
+            </a>
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>管理面板</span>
+            </a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="nav-item logout-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 顶部栏 -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h2>欢迎回来，{{ session.get('username', '用户') }}</h2>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-badge" style="background: {{ session.get('avatar_color', '#6366f1') }}">
+                    {{ session.get('username', 'U')[0].upper() }}
+                </div>
+            </div>
+        </header>
+
+        <!-- 欢迎横幅 -->
+        <div class="welcome-banner">
+            <h2>探索你的专属空间</h2>
+            <p>选择下方板块开始体验，更多功能持续更新中</p>
+        </div>
+
+        <!-- 板块入口网格 -->
+        <div class="modules-grid">
+            <!-- 娱乐板块 -->
+            <a href="{{ url_for('entertainment') }}" class="module-entry">
+                <div class="module-entry-header">
+                    <div class="module-entry-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <h3 class="module-entry-title">娱乐板块</h3>
+                </div>
+                <p class="module-entry-desc">探索精彩娱乐内容，包括图片画廊、音乐播放、视频中心、休闲小游戏等，放松身心。</p>
+                <div class="module-entry-footer">
+                    <span class="module-entry-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        6 个功能待上线
+                    </span>
+                    <div class="module-entry-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 个人信息 -->
+            <a href="{{ url_for('profile') }}" class="module-entry">
+                <div class="module-entry-header">
+                    <div class="module-entry-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <h3 class="module-entry-title">个人信息</h3>
+                </div>
+                <p class="module-entry-desc">查看和编辑个人资料，修改密码，查看账户状态和操作记录。</p>
+                <div class="module-entry-footer">
+                    <span class="module-entry-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        悦己
+                    </span>
+                    <div class="module-entry-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 管理面板（仅管理员可见） -->
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin') }}" class="module-entry">
+                <div class="module-entry-header">
+                    <div class="module-entry-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="module-entry-title">管理面板</h3>
+                </div>
+                <p class="module-entry-desc">用户管理、注册审批、系统日志查看，全面掌控系统运行状态。</p>
+                <div class="module-entry-footer">
+                    <span class="module-entry-badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.2);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        管理员专属
+                    </span>
+                    <div class="module-entry-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Toast 通知 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/floating_player.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ajax_nav.js') }}"></script>
+</body>
+</html>

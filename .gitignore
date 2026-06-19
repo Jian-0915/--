@@ -1,0 +1,35 @@
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# Virtual environment
+venv/
+.env/
+.env.local
+.env.production
+
+# Database
+*.db
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# WebView
+webview.pid

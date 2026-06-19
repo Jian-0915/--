@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择图片偏好 - 图片画廊</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .prefs-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .prefs-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .prefs-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .prefs-header p {
+            color: var(--gray);
+            font-size: 1.05rem;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .category-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-card.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.08);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .category-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .category-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 1.8rem;
+        }
+
+        .category-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .prefs-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn-large {
+            padding: 14px 40px;
+            font-size: 1rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray);
+            text-decoration: none;
+            margin-bottom: 24px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body class="app-page">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span class="sidebar-title">悦己</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>我的主页</span>
+            </a>
+            <a href="{{ url_for('entertainment') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>娱乐板块</span>
+            </a>
+            <a href="{{ url_for('profile') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>个人信息</span>
+            </a>
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>管理面板</span>
+            </a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="nav-item logout-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 顶部栏 -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <a href="{{ url_for('entertainment') }}" class="back-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    返回娱乐板块
+                </a>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-badge" style="background: {{ session.get('avatar_color', '#6366f1') }}">
+                    {{ session.get('username', 'U')[0].upper() }}
+                </div>
+            </div>
+        </header>
+
+        <div class="prefs-container">
+            <div class="prefs-header">
+                <h2>选择你喜欢的图片类型</h2>
+                <p>选择你感兴趣的图片类别，我们将为你推荐相关图片。可以选择多个类别。</p>
+            </div>
+
+            <div class="category-grid" id="categoryGrid">
+                {% for key, name in categories.items() %}
+                <div class="category-card" data-category="{{ key }}" onclick="toggleCategory(this)">
+                    <div class="category-icon">
+                        {% if key == 'landscape' %}🏔️
+                        {% elif key == 'nature' %}🌿
+                        {% elif key == 'architecture' %}🏛️
+                        {% elif key == 'people' %}👥
+                        {% elif key == 'animals' %}🐾
+                        {% elif key == 'food' %}🍜
+                        {% elif key == 'travel' %}✈️
+                        {% elif key == 'technology' %}💻
+                        {% else %}🖼️
+                        {% endif %}
+                    </div>
+                    <div class="category-name">{{ name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="prefs-actions">
+                <button class="btn btn-primary btn-large" onclick="savePreferences()">
+                    开始浏览
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 8px;">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast 通知 -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // 进入子页面时自动隐藏侧边栏 - 先显示再平滑滑出
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.remove('sidebar-hidden');
+            setTimeout(function() {
+                document.body.classList.add('sidebar-hidden');
+            }, 300);
+        });
+
+        let selectedCategories = [];
+
+        function toggleCategory(card) {
+            const category = card.dataset.category;
+
+            if (card.classList.contains('selected')) {
+                card.classList.remove('selected');
+                selectedCategories = selectedCategories.filter(c => c !== category);
+            } else {
+                card.classList.add('selected');
+                selectedCategories.push(category);
+            }
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        async function savePreferences() {
+            if (selectedCategories.length === 0) {
+                showToast('请至少选择一个图片类别', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/gallery/prefs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categories: selectedCategories })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/gallery';
+                    }, 800);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (err) {
+                showToast('保存失败，请重试', 'error');
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/floating_player.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ajax_nav.js') }}"></script>
+</body>
+</html>
