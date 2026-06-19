@@ -142,15 +142,18 @@ function showToast(message, type) {
                 e.preventDefault();
                 const href = this.href;
 
-                // 添加淡出动画
-                if (mainContent) {
-                    mainContent.classList.add('fade-out');
+                // 使用 AJAX 导航（如果可用），避免整页刷新导致音乐停止
+                if (window.AjaxNav) {
+                    if (mainContent) mainContent.classList.add('fade-out');
+                    setTimeout(() => {
+                        window.AjaxNav.navigateTo(href);
+                    }, 200);
+                } else {
+                    if (mainContent) mainContent.classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 400);
                 }
-
-                // 动画结束后跳转
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 400);
             });
         }
     });

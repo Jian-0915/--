@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理面板 - 悦己</title>
+    <title>管理面板 - 栖云阁</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="app-page">
@@ -17,7 +17,7 @@
                     <path d="M2 12l10 5 10-5"/>
                 </svg>
             </div>
-            <span class="sidebar-title">悦己</span>
+            <span class="sidebar-title">栖云阁</span>
         </div>
 
         <nav class="sidebar-nav">
@@ -65,8 +65,14 @@
     <!-- 主内容区 -->
     <main class="main-content">
         <header class="top-bar">
-            <div class="top-bar-left">
-                <h2>管理面板</h2>
+            <div class="top-bar-left" style="display: flex; align-items: center; gap: 16px;">
+                <a href="{{ url_for('dashboard') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--dark-3, #1e293b); color: var(--gray, #cbd5e1); border: 1px solid var(--border, #334155); border-radius: 8px; text-decoration: none; font-size: 0.85rem; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.background='#334155';this.style.borderColor='#475569'" onmouseout="this.style.background='var(--dark-3, #1e293b)';this.style.borderColor='var(--border, #334155)'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    返回主页
+                </a>
+            </div>
+            <div style="position: absolute; left: 50%; transform: translateX(-50%);">
+                <h2 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text, #e2e8f0);">管理面板</h2>
             </div>
             <div class="top-bar-right">
                 <div class="user-badge" style="background: {{ session.get('avatar_color', '#ef4444') }}">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音乐播放器 - 悦己</title>
+    <title>音乐播放器 - 栖云阁</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         /* ========== 全局与布局 ========== */
@@ -17,40 +17,51 @@
             --mp-text: #e2e8f0;
             --mp-gray: #94a3b8;
             --mp-dark-3: #0b0f17;
+            --mp-sidebar-width: 240px;
+            --mp-radius: 12px;
+            --mp-radius-lg: 16px;
         }
 
         .music-page-wrapper {
             display: flex;
-            height: calc(100vh - 64px);
+            height: calc(100vh - var(--topbar-height, 64px));
             overflow: hidden;
+            background: var(--mp-bg);
         }
 
         /* ========== 左侧音乐导航 ========== */
         .mp-sidebar {
-            width: 240px;
-            background: linear-gradient(180deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04));
-            border-right: 1px solid var(--mp-border);
+            width: var(--mp-sidebar-width, 240px);
+            background: linear-gradient(180deg, #1a1f35 0%, #12162a 50%, #0d1020 100%);
+            border-right: 1px solid rgba(99,102,241,0.08);
             display: flex;
             flex-direction: column;
             padding: 20px 12px;
-            gap: 8px;
+            gap: 4px;
             flex-shrink: 0;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         .mp-sidebar::-webkit-scrollbar { width: 4px; }
         .mp-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 
         .mp-sidebar-title {
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--mp-text);
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 0 8px 16px;
+            padding: 0 10px 16px;
             border-bottom: 1px solid var(--mp-border);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+        }
+
+        .mp-sidebar-title svg {
+            background: linear-gradient(135deg, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .mp-nav-item {
@@ -61,23 +72,56 @@
             border-radius: 10px;
             color: var(--mp-gray);
             font-size: 0.9rem;
+            letter-spacing: 0.01em;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
             border: none;
             background: none;
             width: 100%;
             text-align: left;
+            position: relative;
         }
 
         .mp-nav-item:hover {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.06);
             color: var(--mp-text);
         }
 
+        .mp-nav-item:hover::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 16px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 0 2px 2px 0;
+            transition: all 0.2s ease;
+        }
+
         .mp-nav-item.active {
-            background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.25));
+            background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.12));
             color: #fff;
-            box-shadow: 0 4px 15px rgba(99,102,241,0.2);
+            font-weight: 500;
+        }
+
+        .mp-nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(180deg, #818cf8, #a78bfa);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .mp-sidebar-footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--mp-border);
         }
 
         /* ========== 右侧主内容 ========== */
@@ -90,6 +134,58 @@
             position: relative;
         }
 
+        .mp-header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            background: rgba(15, 20, 25, 0.6);
+            backdrop-filter: blur(12px);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .mp-header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--mp-text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mp-header-search {
+            position: relative;
+            width: 280px;
+        }
+
+        .mp-header-search input {
+            width: 100%;
+            padding: 9px 14px 9px 38px;
+            background: var(--mp-card);
+            border: 1px solid var(--mp-border);
+            border-radius: 12px;
+            color: var(--mp-text);
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .mp-header-search input:focus {
+            border-color: var(--mp-primary);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+        }
+
+        .mp-header-search svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--mp-gray);
+        }
+
         .mp-content {
             flex: 1;
             overflow-y: auto;
@@ -100,10 +196,10 @@
         .mp-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
 
         .mp-page-title {
-            font-size: 1.3rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--mp-text);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -112,30 +208,30 @@
         /* ========== 搜索框 ========== */
         .mp-search-wrap {
             position: relative;
-            max-width: 480px;
-            margin-bottom: 24px;
+            max-width: 520px;
+            margin: 0 auto 24px;
         }
 
         .mp-search-wrap input {
             width: 100%;
-            padding: 12px 16px 12px 44px;
+            padding: 14px 18px 14px 48px;
             background: var(--mp-card);
             border: 1px solid var(--mp-border);
-            border-radius: 12px;
+            border-radius: 14px;
             color: var(--mp-text);
-            font-size: 0.9rem;
+            font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
         }
 
         .mp-search-wrap input:focus {
             border-color: var(--mp-primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
         }
 
         .mp-search-wrap svg {
             position: absolute;
-            left: 14px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--mp-gray);
@@ -143,48 +239,50 @@
 
         /* ========== 卡片与列表 ========== */
         .mp-section-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--mp-text);
-            margin: 24px 0 14px;
+            margin: 20px 0 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .mp-cards-scroll {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            padding-bottom: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 20px;
         }
 
         .mp-cards-scroll::-webkit-scrollbar { height: 4px; }
         .mp-cards-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
         .mp-song-card {
-            min-width: 160px;
-            max-width: 160px;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .mp-song-card:hover { transform: translateY(-4px); }
+        .mp-song-card:hover { transform: scale(1.03); }
 
         .mp-song-card .cover {
-            width: 160px;
-            height: 160px;
-            border-radius: 12px;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 14px;
             object-fit: cover;
             background: var(--mp-card);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .mp-song-card:hover .cover {
+            box-shadow: 0 14px 40px rgba(99,102,241,0.2);
         }
 
         .mp-song-card .name {
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.88rem;
+            font-weight: 600;
             color: var(--mp-text);
-            margin-top: 10px;
+            margin-top: 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -193,7 +291,7 @@
         .mp-song-card .artist {
             font-size: 0.75rem;
             color: var(--mp-gray);
-            margin-top: 4px;
+            margin-top: 3px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -206,9 +304,9 @@
         }
 
         .mp-rank-card {
-            background: var(--mp-card);
+            background: linear-gradient(145deg, rgba(26,31,46,0.9), rgba(18,22,42,0.95));
             border: 1px solid var(--mp-border);
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -218,6 +316,7 @@
             background: var(--mp-card-hover);
             border-color: rgba(99,102,241,0.3);
             transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99,102,241,0.12);
         }
 
         .mp-rank-card .icon {
@@ -230,6 +329,7 @@
             justify-content: center;
             color: #fff;
             margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.25);
         }
 
         .mp-rank-card .title { font-size: 0.95rem; font-weight: 600; color: var(--mp-text); }
@@ -239,12 +339,12 @@
         .mp-song-list {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
         }
 
         .mp-song-row {
             display: grid;
-            grid-template-columns: 40px 48px 1fr 140px 80px 44px 44px;
+            grid-template-columns: 36px 44px 1fr 140px 80px 40px 40px;
             align-items: center;
             gap: 12px;
             padding: 10px 14px;
@@ -256,12 +356,12 @@
         .mp-song-row:hover { background: var(--mp-card-hover); }
 
         .mp-song-row.playing {
-            background: linear-gradient(90deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1));
-            border: 1px solid rgba(99,102,241,0.25);
+            background: linear-gradient(90deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08));
+            border: 1px solid rgba(99,102,241,0.2);
         }
 
         .mp-song-row .idx {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--mp-gray);
             text-align: center;
         }
@@ -272,15 +372,15 @@
         }
 
         .mp-song-row .row-cover {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
             object-fit: cover;
             background: var(--mp-card);
         }
 
         .mp-song-row .row-name {
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 500;
             color: var(--mp-text);
             white-space: nowrap;
@@ -289,7 +389,7 @@
         }
 
         .mp-song-row .row-artist {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--mp-gray);
             white-space: nowrap;
             overflow: hidden;
@@ -297,18 +397,18 @@
         }
 
         .mp-song-row .row-duration {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--mp-gray);
             text-align: right;
         }
 
         .mp-song-row .row-btn {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border: none;
             background: none;
             color: var(--mp-gray);
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -326,8 +426,8 @@
         /* ========== 歌单网格 ========== */
         .mp-playlist-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
         }
 
         .mp-playlist-card {
@@ -342,7 +442,7 @@
         .mp-playlist-card:hover {
             transform: translateY(-4px);
             border-color: rgba(99,102,241,0.3);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(99,102,241,0.08);
         }
 
         .mp-playlist-card .pl-cover {
@@ -357,9 +457,9 @@
             font-size: 2.5rem;
         }
 
-        .mp-playlist-card .pl-info { padding: 14px; }
+        .mp-playlist-card .pl-info { padding: 12px; }
         .mp-playlist-card .pl-name {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--mp-text);
             white-space: nowrap;
@@ -367,9 +467,9 @@
             text-overflow: ellipsis;
         }
         .mp-playlist-card .pl-meta {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: var(--mp-gray);
-            margin-top: 6px;
+            margin-top: 4px;
             display: flex;
             justify-content: space-between;
         }
@@ -378,13 +478,13 @@
         .mp-tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
         }
 
         .mp-tab {
             padding: 8px 18px;
-            border-radius: 20px;
+            border-radius: 22px;
             border: 1px solid var(--mp-border);
             background: var(--mp-card);
             color: var(--mp-gray);
@@ -401,123 +501,20 @@
             box-shadow: 0 4px 15px rgba(99,102,241,0.3);
         }
 
-        /* ========== 播放详情面板 ========== */
-        .mp-detail-panel {
-            position: absolute;
-            inset: 0;
-            background: rgba(15,20,25,0.98);
-            backdrop-filter: blur(30px);
-            z-index: 50;
-            display: none;
-            padding: 32px 40px;
-            overflow-y: auto;
-        }
-
-        .mp-detail-panel.show { display: block; }
-
-        .mp-detail-close {
-            position: absolute;
-            top: 20px;
-            right: 24px;
-            width: 36px;
-            height: 36px;
-            border: none;
-            background: var(--mp-card);
-            color: var(--mp-gray);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            z-index: 10;
-        }
-
-        .mp-detail-close:hover { background: var(--mp-card-hover); color: var(--mp-text); }
-
-        .mp-detail-body {
-            display: flex;
-            gap: 48px;
-            max-width: 1000px;
-            margin: 0 auto;
-            align-items: flex-start;
-            padding-top: 20px;
-        }
-
-        .mp-detail-left {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            flex-shrink: 0;
-        }
-
-        .mp-detail-cover {
-            width: 280px;
-            height: 280px;
-            border-radius: 20px;
-            object-fit: cover;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-        }
-
-        .mp-detail-cover.playing {
-            animation: spin 24s linear infinite;
-            border-radius: 50%;
-        }
-
-        .mp-detail-info { text-align: center; }
-        .mp-detail-info .name { font-size: 1.4rem; font-weight: 700; color: var(--mp-text); }
-        .mp-detail-info .artist { font-size: 1rem; color: var(--mp-gray); margin-top: 8px; }
-        .mp-detail-info .album { font-size: 0.85rem; color: var(--mp-gray); margin-top: 4px; opacity: 0.7; }
-
-        .mp-detail-right {
-            flex: 1;
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-
-        .mp-detail-right::-webkit-scrollbar { width: 4px; }
-        .mp-detail-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-
-        .mp-lyric-line {
-            font-size: 0.95rem;
-            color: var(--mp-gray);
-            padding: 10px 0;
-            text-align: center;
-            transition: all 0.4s ease;
-            line-height: 1.6;
-        }
-
-        .mp-lyric-line.active {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: var(--mp-primary);
-            text-shadow: 0 0 20px rgba(99,102,241,0.3);
-        }
-
-        .mp-lyric-empty {
-            text-align: center;
-            color: var(--mp-gray);
-            padding: 60px 20px;
-            font-size: 0.9rem;
-        }
-
         /* ========== 按钮与表单 ========== */
         .mp-btn-primary {
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: linear-gradient(135deg, var(--mp-primary), var(--mp-secondary));
             color: #fff;
             border: none;
             border-radius: 10px;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.25s ease;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .mp-btn-primary:hover {
@@ -526,12 +523,12 @@
         }
 
         .mp-btn-danger {
-            padding: 8px 16px;
+            padding: 8px 14px;
             background: rgba(239,68,68,0.15);
             color: #ef4444;
             border: 1px solid rgba(239,68,68,0.2);
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -539,12 +536,12 @@
         .mp-btn-danger:hover { background: rgba(239,68,68,0.25); }
 
         .mp-btn-ghost {
-            padding: 8px 16px;
+            padding: 8px 14px;
             background: none;
             color: var(--mp-gray);
             border: 1px solid var(--mp-border);
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
             transition: all 0.2s ease;
             display: inline-flex;
@@ -617,33 +614,52 @@
         @media (max-width: 900px) {
             .music-page-wrapper { flex-direction: column; height: auto; }
             .mp-sidebar {
-                width: 100%;
+                width: 200px;
                 flex-direction: row;
                 overflow-x: auto;
-                padding: 12px;
+                padding: 10px;
                 border-right: none;
                 border-bottom: 1px solid var(--mp-border);
             }
             .mp-sidebar-title { display: none; }
-            .mp-nav-item { white-space: nowrap; width: auto; padding: 8px 14px; }
+            .mp-sidebar-footer { display: none; }
+            .mp-nav-item { white-space: nowrap; width: auto; padding: 6px 12px; font-size: 0.82rem; }
+            .mp-nav-item.active::before { display: none; }
+            .mp-header { padding: 0 16px; height: 48px; }
+            .mp-header-search { width: 200px; }
+            .mp-content { padding: 16px; }
+            .mp-cards-scroll { grid-template-columns: repeat(3, 1fr); }
             .mp-rank-grid { grid-template-columns: repeat(2, 1fr); }
-            .mp-detail-body { flex-direction: column; align-items: center; }
-            .mp-detail-right { width: 100%; max-height: 300px; }
             .mp-song-row { grid-template-columns: 30px 40px 1fr 60px 36px 36px; }
             .mp-song-row .row-artist { display: none; }
-
         }
 
         @media (max-width: 600px) {
+            .music-page-wrapper { flex-direction: column; height: auto; }
+            .mp-sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+                border-right: none;
+                border-bottom: 1px solid var(--mp-border);
+            }
+            .mp-sidebar-title { display: none; }
+            .mp-sidebar-footer { display: none; }
+            .mp-nav-item { white-space: nowrap; width: auto; padding: 6px 12px; font-size: 0.82rem; }
+            .mp-nav-item.active::before { display: none; }
+            .mp-cards-scroll { grid-template-columns: repeat(2, 1fr); }
             .mp-song-row { grid-template-columns: 30px 1fr 50px 36px; }
             .mp-song-row .row-cover, .mp-song-row .row-btn:last-child { display: none; }
             .mp-rank-grid { grid-template-columns: 1fr; }
-            .mp-content { padding: 16px; }
+            .mp-content { padding: 12px; }
+            .mp-header { padding: 0 12px; }
+            .mp-header-search { width: 160px; }
         }
     </style>
 </head>
 <body class="app-page">
-    <!-- 全局侧边栏 -->
+    <!-- 全局侧边栏（与其他页面一致） -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
@@ -653,8 +669,9 @@
                     <path d="M2 12l10 5 10-5"/>
                 </svg>
             </div>
-            <span class="sidebar-title">悦己</span>
+            <span class="sidebar-title">栖云阁</span>
         </div>
+
         <nav class="sidebar-nav">
             <a href="{{ url_for('dashboard') }}" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -668,6 +685,14 @@
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                 </svg>
                 <span>娱乐板块</span>
+            </a>
+            <a href="{{ url_for('music_player') }}" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18V5l12-2v13"/>
+                    <circle cx="6" cy="18" r="3"/>
+                    <circle cx="18" cy="16" r="3"/>
+                </svg>
+                <span>音乐播放器</span>
             </a>
             <a href="{{ url_for('profile') }}" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -686,6 +711,7 @@
             </a>
             {% endif %}
         </nav>
+
         <div class="sidebar-footer">
             <a href="{{ url_for('logout') }}" class="nav-item logout-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -699,17 +725,18 @@
     </aside>
 
     <main class="main-content">
-        <!-- 顶栏 -->
+        <!-- 顶部栏 -->
         <header class="top-bar">
-            <div class="top-bar-left">
-                <a href="{{ url_for('entertainment') }}" class="back-link" style="display: inline-flex; align-items: center; gap: 8px; color: var(--gray); text-decoration: none;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15 18 9 12 15 6"/>
-                    </svg>
+            <div class="top-bar-left" style="display: flex; align-items: center; gap: 16px;">
+                <a href="{{ url_for('entertainment') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--dark-3, #1e293b); color: var(--gray, #cbd5e1); border: 1px solid var(--border, #334155); border-radius: 8px; text-decoration: none; font-size: 0.85rem; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.background='#334155';this.style.borderColor='#475569'" onmouseout="this.style.background='var(--dark-3, #1e293b)';this.style.borderColor='var(--border, #334155)'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                     返回娱乐板块
                 </a>
             </div>
-            <div class="top-bar-right">
+            <div class="top-bar-center" style="position: absolute; left: 50%; transform: translateX(-50%);">
+                <h2 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text, #e2e8f0);">音乐播放器</h2>
+            </div>
+            <div class="top-bar-right" style="display: flex; align-items: center; gap: 12px;">
                 <div class="user-badge" style="background: {{ session.get('avatar_color', '#6366f1') }}">
                     {{ session.get('username', 'U')[0].upper() }}
                 </div>
@@ -719,14 +746,6 @@
         <div class="music-page-wrapper">
             <!-- 左侧音乐导航 -->
             <nav class="mp-sidebar">
-                <div class="mp-sidebar-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                    音乐播放器
-                </div>
                 <button class="mp-nav-item active" data-page="recommend" onclick="switchPage('recommend')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -769,70 +788,63 @@
                     </svg>
                     播放历史
                 </button>
+                <div class="mp-sidebar-footer">
+                </div>
             </nav>
 
             <!-- 右侧主内容 -->
             <div class="mp-main">
+                <div class="mp-header" id="mpHeader">
+                    <div class="mp-header-title" id="mpHeaderTitle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        推荐音乐
+                    </div>
+                    <div class="mp-header-search" id="mpHeaderSearch" style="display:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" id="headerSearchInput" placeholder="搜索歌曲、歌手、专辑..." onkeydown="if(event.key==='Enter'){searchKeyword=this.value;switchPage('search');doSearch();}">
+                    </div>
+                </div>
                 <div class="mp-content" id="mpContent">
                     <!-- 动态内容区域 -->
-                </div>
-
-                <!-- 播放详情面板 -->
-                <div class="mp-detail-panel" id="detailPanel">
-                    <button class="mp-detail-close" onclick="toggleDetailPanel(false)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
-                    <div class="mp-detail-body">
-                        <div class="mp-detail-left">
-                            <img class="mp-detail-cover" id="detailCover" src="" alt="">
-                            <div class="mp-detail-info">
-                                <div class="name" id="detailName">--</div>
-                                <div class="artist" id="detailArtist">--</div>
-                                <div class="album" id="detailAlbum">--</div>
-                            </div>
-                        </div>
-                        <div class="mp-detail-right" id="lyricContainer">
-                            <div class="mp-lyric-empty">暂无歌词</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </main>
-
-    <!-- 弹窗 -->
-    <div class="mp-modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
-        <div class="mp-modal" id="modalContent"></div>
-    </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/floating_player.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ajax_nav.js') }}"></script>
     <script>
         // ==================== 全局状态 ====================
-        let currentPage = 'recommend';
-        let currentPlaylist = [];
-        let currentSongIndex = -1;
-        let currentSong = null;
-        let isPlaying = false;
-        let playMode = 'order'; // order, random, single
-        let favorites = [];
-        let playlists = [];
-        let lyrics = [];
-        let searchTimer = null;
-        let searchKeyword = '';
+        // 使用 var 声明，避免 AJAX 导航重新执行脚本时重复声明报错
+        var currentPage = 'recommend';
+        var currentPlaylist = [];
+        var currentSongIndex = -1;
+        var currentSong = null;
+        var isPlaying = false;
+        var playMode = 'order';
+        var favorites = [];
+        var playlists = [];
+        var lyrics = [];
+        var searchTimer = null;
+        var searchKeyword = '';
 
-        const contentEl = document.getElementById('mpContent');
-        const detailPanel = document.getElementById('detailPanel');
+        // 使用 var 声明，避免 AJAX 导航重新执行脚本时 const 重复声明报错
+        var contentEl = document.getElementById('mpContent');
 
         // ==================== 页面导航 ====================
         function switchPage(page) {
             currentPage = page;
             document.querySelectorAll('.mp-nav-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`.mp-nav-item[data-page="${page}"]`)?.classList.add('active');
+
+            // 更新顶部标题栏
+            updateHeader(page);
 
             switch (page) {
                 case 'recommend': renderRecommend(); break;
@@ -844,22 +856,29 @@
             }
         }
 
+        function updateHeader(page) {
+            const titleEl = document.getElementById('mpHeaderTitle');
+            const searchEl = document.getElementById('mpHeaderSearch');
+            const headerMap = {
+                recommend: { text: '推荐音乐', icon: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
+                search: { text: '搜索歌曲', icon: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>' },
+                ranking: { text: '排行榜', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+                playlists: { text: '我的歌单', icon: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' },
+                favorites: { text: '我的收藏', icon: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>' },
+                history: { text: '播放历史', icon: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>' }
+            };
+            const cfg = headerMap[page];
+            if (titleEl && cfg) {
+                titleEl.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${cfg.icon}</svg>${cfg.text}`;
+            }
+            if (searchEl) {
+                searchEl.style.display = (page === 'recommend' || page === 'search') ? 'block' : 'none';
+            }
+        }
+
         // ==================== 推荐页 ====================
         async function renderRecommend() {
             contentEl.innerHTML = `
-                <div class="mp-page-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                    推荐音乐
-                </div>
-                <div class="mp-search-wrap">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input type="text" placeholder="搜索歌曲、歌手、专辑..." onkeydown="if(event.key==='Enter'){searchKeyword=this.value;switchPage('search');doSearch();}">
-                </div>
                 <div class="mp-section-title">热门推荐</div>
                 <div class="mp-cards-scroll" id="hotRecs">
                     <div class="mp-empty" style="padding:20px 0;"><span style="color:var(--mp-gray);">加载中...</span></div>
@@ -907,19 +926,12 @@
         // ==================== 搜索页 ====================
         function renderSearch() {
             contentEl.innerHTML = `
-                <div class="mp-page-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <div class="mp-search-wrap" style="margin-top: 20px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
-                    搜索歌曲
-                </div>
-                <div class="mp-search-wrap">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input type="text" id="searchInput" placeholder="搜索歌曲、歌手、专辑..." value="${searchKeyword}" oninput="onSearchInput(this.value)">
+                    <input type="text" id="searchInput" placeholder="搜索歌曲、歌手、专辑..." value="${searchKeyword}" oninput="onSearchInput(this.value)" autofocus>
                 </div>
                 <div id="searchResultArea"></div>
             `;
@@ -960,21 +972,11 @@
         // ==================== 排行榜页 ====================
         function renderRanking() {
             contentEl.innerHTML = `
-                <div class="mp-page-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="20" x2="18" y2="10"/>
-                        <line x1="12" y1="20" x2="12" y2="4"/>
-                        <line x1="6" y1="20" x2="6" y2="14"/>
-                    </svg>
-                    排行榜
-                </div>
                 <div class="mp-tabs">
                     <button class="mp-tab active" data-rank="hot" onclick="loadRanking('hot')">飙升榜</button>
                     <button class="mp-tab" data-rank="new" onclick="loadRanking('new')">新歌榜</button>
                     <button class="mp-tab" data-rank="pop" onclick="loadRanking('pop')">热歌榜</button>
                     <button class="mp-tab" data-rank="classic" onclick="loadRanking('classic')">经典榜</button>
-                    <button class="mp-tab" data-rank="electronic" onclick="loadRanking('electronic')">电子榜</button>
-                    <button class="mp-tab" data-rank="uk" onclick="loadRanking('uk')">UK榜</button>
                 </div>
                 <div id="rankingArea"></div>
             `;
@@ -1002,14 +1004,8 @@
         // ==================== 我的歌单 ====================
         async function renderPlaylists() {
             contentEl.innerHTML = `
-                <div class="mp-page-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                    我的歌单
-                    <button class="mp-btn-primary" style="margin-left:auto;" onclick="createPlaylist()">
+                <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+                    <button class="mp-btn-primary" onclick="createPlaylist()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         新建歌单
                     </button>
@@ -1020,11 +1016,12 @@
         }
 
         async function loadPlaylists() {
-            const area = document.getElementById('playlistArea');
             try {
                 const resp = await fetch('/music/api/playlists');
                 const data = await resp.json();
                 playlists = data.playlists || [];
+                const area = document.getElementById('playlistArea');
+                if (!area) return;
                 if (playlists.length === 0) {
                     area.innerHTML = '<div class="mp-empty">暂无歌单，点击上方按钮创建</div>';
                     return;
@@ -1153,23 +1150,18 @@
         // ==================== 我的收藏 ====================
         async function renderFavorites() {
             contentEl.innerHTML = `
-                <div class="mp-page-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                    我的收藏
-                </div>
                 <div id="favArea"></div>
             `;
             await loadFavorites();
         }
 
         async function loadFavorites() {
-            const area = document.getElementById('favArea');
             try {
                 const resp = await fetch('/music/api/favorites');
                 const data = await resp.json();
                 favorites = data.favorites || [];
+                const area = document.getElementById('favArea');
+                if (!area) return;
                 if (favorites.length === 0) {
                     area.innerHTML = '<div class="mp-empty">暂无收藏歌曲</div>';
                     return;
@@ -1221,13 +1213,6 @@
         // ==================== 播放历史 ====================
         async function renderHistory() {
             contentEl.innerHTML = `
-                <div class="mp-page-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    播放历史
-                </div>
                 <div id="histArea"></div>
             `;
             try {
@@ -1241,7 +1226,7 @@
                 document.getElementById('histArea').innerHTML = `
                     <div class="mp-song-list">
                         ${history.map((h, i) => `
-                            <div class="mp-song-row" style="grid-template-columns:40px 1fr 140px;">
+                            <div class="mp-song-row" style="grid-template-columns:36px 1fr 140px;">
                                 <div class="idx">${i + 1}</div>
                                 <div class="row-name">${h.song_name}</div>
                                 <div class="row-artist">${h.artist}</div>
@@ -1298,19 +1283,9 @@
             document.querySelectorAll('.mp-song-row').forEach(row => row.classList.remove('playing'));
             refreshFavoriteIcons();
 
-            // 通过 floatingPlayer 播放
+            // 通过 floatingPlayer 播放（唯一播放入口）
             if (window.floatingPlayer) {
-                const fp = window.floatingPlayer;
-                fp.currentSong = song;
-                fp.playlist = currentPlaylist;
-                fp.currentIndex = currentSongIndex;
-                fp.audio.src = `/music/api/audio_proxy/${song.id}`;
-                fp.audio.play().then(() => {
-                    fp.isPlaying = true;
-                    fp.updateUI();
-                    fp.showPlayer();
-                    fp.saveState();
-                }).catch(e => console.error('播放失败:', e));
+                window.floatingPlayer.playSong(song, currentSongIndex);
             }
 
             // 加载歌词
@@ -1325,11 +1300,7 @@
         }
 
         function updatePlayerUI(song) {
-            const el = (id) => document.getElementById(id);
-            if (el('detailName')) el('detailName').textContent = song.name;
-            if (el('detailArtist')) el('detailArtist').textContent = song.artist;
-            if (el('detailAlbum')) el('detailAlbum').textContent = song.album || '';
-            if (el('detailCover')) el('detailCover').src = song.cover || '';
+            // 详情面板UI现在由 floatingPlayer 处理
         }
 
         function togglePlay() {
@@ -1368,13 +1339,14 @@
 
         // ==================== 进度条与音量 ====================
         // 标记当前页面是否仍然活跃（AJAX导航离开后变为false）
-        let pageActive = true;
+        // 使用 window 属性，使外部（重复进入时的 if 块）也能访问
+        if (!window.__mpActive) window.__mpActive = true;
 
         let _uiPollTimer = null;
         function startUIPoll() {
             stopUIPoll();
             _uiPollTimer = setInterval(() => {
-                if (!pageActive) return;
+                if (!window.__mpActive) return;
                 const fp = window.floatingPlayer;
                 if (!fp || !fp.audio) return;
                 const a = fp.audio;
@@ -1407,25 +1379,13 @@
         });
 
         // ==================== 歌词 ====================
+        // 页面内歌词功能已移至 floatingPlayer 的详情面板
+        // 保留 parseLRC 和 updateLyric 以备页面内歌词显示需要
         async function loadLyric(songId) {
             lyrics = [];
-            const container = document.getElementById('lyricContainer');
-            container.innerHTML = '<div class="mp-lyric-empty">加载歌词...</div>';
-            try {
-                const resp = await fetch('/music/api/lyric?id=' + songId);
-                const data = await resp.json();
-                if (data.lrc && data.lrc.lyric) {
-                    lyrics = parseLRC(data.lrc.lyric);
-                    if (lyrics.length > 0) {
-                        container.innerHTML = lyrics.map((l, i) => `<div class="mp-lyric-line" data-idx="${i}">${l.text}</div>`).join('');
-                    } else {
-                        container.innerHTML = '<div class="mp-lyric-empty">暂无歌词</div>';
-                    }
-                } else {
-                    container.innerHTML = '<div class="mp-lyric-empty">暂无歌词</div>';
-                }
-            } catch (e) {
-                container.innerHTML = '<div class="mp-lyric-empty">暂无歌词</div>';
+            // 歌词现在由 floatingPlayer 的详情面板处理
+            if (window.floatingPlayer) {
+                window.floatingPlayer.loadLyric(songId);
             }
         }
 
@@ -1468,15 +1428,21 @@
             }
         }
 
-        // ==================== 播放详情面板 ====================
-        function toggleDetailPanel(show) {
-            if (show === undefined) show = !detailPanel.classList.contains('show');
-            detailPanel.classList.toggle('show', show);
+        // ==================== 弹窗 ====================
+        // 弹窗挂载在 body 上，不受 main innerHTML 替换影响
+        function ensureModal() {
+            if (document.getElementById('modalOverlay')) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'mp-modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.setAttribute('onclick', 'if(event.target===this)closeModal()');
+            overlay.innerHTML = '<div class="mp-modal" id="modalContent"></div>';
+            document.body.appendChild(overlay);
         }
 
-        // ==================== 弹窗 ====================
         function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('show');
+            const el = document.getElementById('modalOverlay');
+            if (el) el.classList.remove('show');
         }
 
         // ==================== 工具函数 ====================
@@ -1489,13 +1455,56 @@
         }
 
         // ==================== 初始化 ====================
+        // 同步 floatingPlayer 状态并检查是否展开详情面板
+        function syncAndExpandDetail() {
+            const shouldExpand = localStorage.getItem('mp_expand_detail') === '1';
+            if (shouldExpand) localStorage.removeItem('mp_expand_detail');
+            if (window.floatingPlayer && window.floatingPlayer.currentSong) {
+                currentSong = window.floatingPlayer.currentSong;
+                currentPlaylist = window.floatingPlayer.playlist || [];
+                currentSongIndex = window.floatingPlayer.currentIndex;
+                if (shouldExpand) window.floatingPlayer.toggleDetail(true);
+            }
+        }
+
         async function init() {
+            // 确保弹窗存在于 body 上
+            ensureModal();
+
+            // 防止重复初始化：AJAX 导航回来时只刷新内容
+            if (window.__musicPlayerInit) {
+                window.__mpActive = true;
+                contentEl = document.getElementById('mpContent');
+                switchPage('recommend');
+                startUIPoll();
+                syncAndExpandDetail();
+                return;
+            }
+            window.__musicPlayerInit = true;
+
             await loadFavorites();
             await loadPlaylists();
             switchPage('recommend');
             startUIPoll();
-            // 监听页面离开
-            window.addEventListener('pageNavigated', () => { pageActive = false; stopUIPoll(); });
+            syncAndExpandDetail();
+            // 监听页面导航事件
+            window.addEventListener('pageNavigated', (e) => {
+                if (e.detail && e.detail.url !== '/music') {
+                    window.__mpActive = false;
+                    stopUIPoll();
+                } else if (e.detail && e.detail.url === '/music') {
+                    // 返回音乐页面时恢复UI
+                    window.__mpActive = true;
+                    contentEl = document.getElementById('mpContent');
+                    startUIPoll();
+                    if (window.floatingPlayer && window.floatingPlayer.currentSong) {
+                        currentSong = window.floatingPlayer.currentSong;
+                        currentPlaylist = window.floatingPlayer.playlist || [];
+                        currentSongIndex = window.floatingPlayer.currentIndex;
+                    }
+                    switchPage('recommend');
+                }
+            });
         }
 
         init();

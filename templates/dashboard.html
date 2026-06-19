@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>主页 - 悦己</title>
+    <title>主页 - 栖云阁</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .modules-grid {
@@ -169,7 +169,7 @@
                     <path d="M2 12l10 5 10-5"/>
                 </svg>
             </div>
-            <span class="sidebar-title">悦己</span>
+            <span class="sidebar-title">栖云阁</span>
         </div>
 
         <nav class="sidebar-nav">
@@ -216,114 +216,112 @@
         </div>
     </aside>
 
-    <!-- 主内容区 -->
     <main class="main-content">
-        <!-- 顶部栏 -->
-        <header class="top-bar">
-            <div class="top-bar-left">
-                <h2>欢迎回来，{{ session.get('username', '用户') }}</h2>
+            <!-- 顶部栏 -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h2>欢迎回来，{{ session.get('username', '用户') }}</h2>
+                </div>
+                <div class="top-bar-right">
+                    <div class="user-badge" style="background: {{ session.get('avatar_color', '#6366f1') }}">
+                        {{ session.get('username', 'U')[0].upper() }}
+                    </div>
+                </div>
+            </header>
+
+            <!-- 欢迎横幅 -->
+            <div class="welcome-banner">
+                <h2>探索你的专属空间</h2>
+                <p>选择下方板块开始体验，更多功能持续更新中</p>
             </div>
-            <div class="top-bar-right">
-                <div class="user-badge" style="background: {{ session.get('avatar_color', '#6366f1') }}">
-                    {{ session.get('username', 'U')[0].upper() }}
-                </div>
+
+            <!-- 板块入口网格 -->
+            <div class="modules-grid">
+                <!-- 娱乐板块 -->
+                <a href="{{ url_for('entertainment') }}" class="module-entry">
+                    <div class="module-entry-header">
+                        <div class="module-entry-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                        </div>
+                        <h3 class="module-entry-title">娱乐板块</h3>
+                    </div>
+                    <p class="module-entry-desc">探索精彩娱乐内容，包括图片画廊、音乐播放、视频中心、休闲小游戏等，放松身心。</p>
+                    <div class="module-entry-footer">
+                        <span class="module-entry-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            6 个功能待上线
+                        </span>
+                        <div class="module-entry-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 个人信息 -->
+                <a href="{{ url_for('profile') }}" class="module-entry">
+                    <div class="module-entry-header">
+                        <div class="module-entry-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <h3 class="module-entry-title">个人信息</h3>
+                    </div>
+                    <p class="module-entry-desc">查看和编辑个人资料，修改密码，查看账户状态和操作记录。</p>
+                    <div class="module-entry-footer">
+                        <span class="module-entry-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            栖云阁
+                        </span>
+                        <div class="module-entry-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 管理面板（仅管理员可见） -->
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin') }}" class="module-entry">
+                    <div class="module-entry-header">
+                        <div class="module-entry-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="module-entry-title">管理面板</h3>
+                    </div>
+                    <p class="module-entry-desc">用户管理、注册审批、系统日志查看，全面掌控系统运行状态。</p>
+                    <div class="module-entry-footer">
+                        <span class="module-entry-badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.2);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            管理员专属
+                        </span>
+                        <div class="module-entry-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+                {% endif %}
             </div>
-        </header>
+        </main>
 
-        <!-- 欢迎横幅 -->
-        <div class="welcome-banner">
-            <h2>探索你的专属空间</h2>
-            <p>选择下方板块开始体验，更多功能持续更新中</p>
-        </div>
-
-        <!-- 板块入口网格 -->
-        <div class="modules-grid">
-            <!-- 娱乐板块 -->
-            <a href="{{ url_for('entertainment') }}" class="module-entry">
-                <div class="module-entry-header">
-                    <div class="module-entry-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                        </svg>
-                    </div>
-                    <h3 class="module-entry-title">娱乐板块</h3>
-                </div>
-                <p class="module-entry-desc">探索精彩娱乐内容，包括图片画廊、音乐播放、视频中心、休闲小游戏等，放松身心。</p>
-                <div class="module-entry-footer">
-                    <span class="module-entry-badge">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        6 个功能待上线
-                    </span>
-                    <div class="module-entry-arrow">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
-                    </div>
-                </div>
-            </a>
-
-            <!-- 个人信息 -->
-            <a href="{{ url_for('profile') }}" class="module-entry">
-                <div class="module-entry-header">
-                    <div class="module-entry-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                    </div>
-                    <h3 class="module-entry-title">个人信息</h3>
-                </div>
-                <p class="module-entry-desc">查看和编辑个人资料，修改密码，查看账户状态和操作记录。</p>
-                <div class="module-entry-footer">
-                    <span class="module-entry-badge">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                        悦己
-                    </span>
-                    <div class="module-entry-arrow">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
-                    </div>
-                </div>
-            </a>
-
-            <!-- 管理面板（仅管理员可见） -->
-            {% if session.get('role') == 'admin' %}
-            <a href="{{ url_for('admin') }}" class="module-entry">
-                <div class="module-entry-header">
-                    <div class="module-entry-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                    </div>
-                    <h3 class="module-entry-title">管理面板</h3>
-                </div>
-                <p class="module-entry-desc">用户管理、注册审批、系统日志查看，全面掌控系统运行状态。</p>
-                <div class="module-entry-footer">
-                    <span class="module-entry-badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.2);">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                        管理员专属
-                    </span>
-                    <div class="module-entry-arrow">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
-                    </div>
-                </div>
-            </a>
-            {% endif %}
-        </div>
-    </main>
-
-    <!-- Toast 通知 -->
     <div id="toast" class="toast"></div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

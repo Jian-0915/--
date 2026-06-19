@@ -15,6 +15,8 @@ class FloatingPlayer {
         this.isMuted = false;
         this.repeatMode = "off";
         this.isShuffle = false;
+        this.detailOverlay = null;
+        this.detailLyrics = [];
         this.init();
     }
 
@@ -22,35 +24,13 @@ class FloatingPlayer {
         this.createAudio();
         this.loadState();
         this.createPlayerUI();
+        this.createDetailOverlay();
         this.setupEventListeners();
         this.updateUI();
         // 如果有保存的歌曲，恢复显示
         if (this.currentSong) {
             this.showPlayer();
         }
-        // 监听 AJAX 导航，自动切换悬浮播放器可见性
-        this._setupNavObserver();
-    }
-
-    _setupNavObserver() {
-        // 监听 popstate（浏览器前进/后退）
-        window.addEventListener('popstate', () => {
-            setTimeout(() => this.refreshVisibility(), 100);
-        });
-        // 监听自定义导航事件（ajax_nav.js 触发）
-        window.addEventListener('pageNavigated', () => {
-            setTimeout(() => this.refreshVisibility(), 100);
-        });
-        // 监听 URL 变化（MutationObserver 监听 pathname）
-        let lastPath = window.location.pathname;
-        const checkNav = () => {
-            if (window.location.pathname !== lastPath) {
-                lastPath = window.location.pathname;
-                setTimeout(() => this.refreshVisibility(), 100);
-            }
-            requestAnimationFrame(checkNav);
-        };
-        requestAnimationFrame(checkNav);
     }
 
     createAudio() {
@@ -257,7 +237,7 @@ class FloatingPlayer {
         this.playSong(this.playlist[i], i);
     }
 
-    // 通过悬浮播放器播放歌曲（需要先获取URL）
+    // 通过悬浮播放器播放歌曲
     async playSong(song, index) {
         this.currentSong = song;
         this.currentIndex = index !== undefined ? index : this.playlist.findIndex(s => s.id === song.id);
@@ -266,16 +246,9 @@ class FloatingPlayer {
             this.currentIndex = this.playlist.length - 1;
         }
 
-        try {
-            const resp = await fetch('/music/api/song_url/' + song.id);
-            const data = await resp.json();
-            if (data.success) {
-                this.audio.src = data.url;
-                this.audio.play().catch(e => console.error("Play error:", e));
-            }
-        } catch (e) {
-            console.error("获取播放地址失败:", e);
-        }
+        // 使用 audio_proxy 代理播放，避免跨域问题
+        this.audio.src = `/music/api/audio_proxy/${song.id}`;
+        this.audio.play().catch(e => console.error("Play error:", e));
 
         this.updateUI();
         this.saveState();
@@ -344,6 +317,8 @@ class FloatingPlayer {
         const percent = this.audio.currentTime / this.audio.duration;
         this.elements.progressFill.style.width = percent * 100 + "%";
         this.elements.progressTime.textContent = this.formatTime(this.audio.currentTime) + " / " + this.formatTime(this.audio.duration);
+        this.updateDetailProgress();
+        this.updateDetailLyric();
     }
 
     updateDuration() {
@@ -397,6 +372,7 @@ class FloatingPlayer {
         this.updatePlayIcon();
         this.updateRepeatUI();
         this.updateShuffleUI();
+        this.updateDetailUI();
     }
 
     updateRepeatUI() {
@@ -419,26 +395,349 @@ class FloatingPlayer {
         this.elements.player.classList.add("hidden");
     }
 
-    isOnMusicPage() {
-        return window.location.pathname === '/music';
+    createDetailOverlay() {
+        // 如果已存在，不重复创建
+        if (document.getElementById('fp-detail-overlay')) {
+            this.detailOverlay = document.getElementById('fp-detail-overlay');
+            return;
+        }
+
+        // 创建 style 标签
+        const style = document.createElement('style');
+        style.id = 'fp-detail-style';
+        style.textContent = `
+#fp-detail-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: none;
+}
+#fp-detail-overlay.show { display: block; }
+.fp-detail-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,20,25,0.98);
+    backdrop-filter: blur(30px);
+}
+.fp-detail-content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    padding: 32px 40px;
+    overflow-y: auto;
+}
+.fp-detail-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: #aaa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+.fp-detail-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.fp-detail-body {
+    display: flex;
+    gap: 48px;
+    max-width: 1000px;
+    margin: 0 auto;
+    align-items: flex-start;
+    padding-top: 20px;
+}
+.fp-detail-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+.fp-detail-cover {
+    width: 280px;
+    height: 280px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+.fp-detail-cover.playing {
+    animation: fp-spin 24s linear infinite;
+    border-radius: 50%;
+}
+@keyframes fp-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.fp-detail-info { text-align: center; }
+.fp-detail-info .name { font-size: 1.4rem; font-weight: 700; color: #fff; }
+.fp-detail-info .artist { font-size: 1rem; color: #aaa; margin-top: 8px; }
+.fp-detail-info .album { font-size: 0.85rem; color: #aaa; margin-top: 4px; opacity: 0.7; }
+.fp-detail-controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+}
+.fp-detail-controls button {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.fp-detail-controls button:hover { background: rgba(255,255,255,0.2); }
+.fp-detail-controls button.play-btn {
+    width: 56px;
+    height: 56px;
+    background: #ec4899;
+}
+.fp-detail-controls button.play-btn:hover { background: #db2777; }
+.fp-detail-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 280px;
+    margin-top: 8px;
+    color: #aaa;
+    font-size: 0.8rem;
+}
+.fp-detail-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+}
+.fp-detail-progress-fill {
+    height: 100%;
+    background: #ec4899;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+.fp-detail-right {
+    flex: 1;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+.fp-detail-right::-webkit-scrollbar { width: 4px; }
+.fp-detail-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.fp-lyric-line {
+    padding: 10px 0;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.fp-lyric-line:hover { color: rgba(255,255,255,0.7); }
+.fp-lyric-line.active {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.fp-lyric-empty {
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    padding: 60px 0;
+}
+@media (max-width: 900px) {
+    .fp-detail-body { flex-direction: column; align-items: center; }
+    .fp-detail-right { width: 100%; max-height: 300px; }
+}
+`;
+        document.head.appendChild(style);
+
+        // 创建 overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'fp-detail-overlay';
+        overlay.innerHTML = `
+    <div class="fp-detail-bg"></div>
+    <div class="fp-detail-content">
+        <button class="fp-detail-close" id="fpDetailClose">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+        <div class="fp-detail-body">
+            <div class="fp-detail-left">
+                <img class="fp-detail-cover" id="fpDetailCover" src="" alt="">
+                <div class="fp-detail-info">
+                    <div class="name" id="fpDetailName">--</div>
+                    <div class="artist" id="fpDetailArtist">--</div>
+                    <div class="album" id="fpDetailAlbum">--</div>
+                </div>
+                <div class="fp-detail-controls">
+                    <button id="fpDetailPrev" title="上一首">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                            <polygon points="19 20 9 12 19 4 19 20"/><polygon points="5 20 15 12 5 4 5 20"/>
+                        </svg>
+                    </button>
+                    <button class="play-btn" id="fpDetailPlay" title="播放/暂停">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                    </button>
+                    <button id="fpDetailNext" title="下一首">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                            <polygon points="5 4 15 12 5 20 5 4"/><polygon points="19 4 9 12 19 20 19 4"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="fp-detail-progress">
+                    <span id="fpDetailCurrentTime">00:00</span>
+                    <div class="fp-detail-progress-bar" id="fpDetailProgressBar">
+                        <div class="fp-detail-progress-fill" id="fpDetailProgressFill"></div>
+                    </div>
+                    <span id="fpDetailTotalTime">00:00</span>
+                </div>
+            </div>
+            <div class="fp-detail-right" id="fpDetailLyricContainer">
+                <div class="fp-lyric-empty">暂无歌词</div>
+            </div>
+        </div>
+    </div>
+`;
+        document.body.appendChild(overlay);
+
+        // 绑定事件
+        document.getElementById('fpDetailClose').addEventListener('click', () => this.toggleDetail(false));
+        document.getElementById('fpDetailPrev').addEventListener('click', () => this.playPrev());
+        document.getElementById('fpDetailPlay').addEventListener('click', () => this.togglePlay());
+        document.getElementById('fpDetailNext').addEventListener('click', () => this.playNext());
+        document.getElementById('fpDetailProgressBar').addEventListener('click', (e) => {
+            if (!this.audio.duration) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            this.audio.currentTime = this.audio.duration * ((e.clientX - rect.left) / rect.width);
+        });
+
+        this.detailOverlay = overlay;
     }
 
-    /** 根据当前页面自动决定显示或隐藏悬浮播放器 */
-    refreshVisibility() {
-        if (this.isOnMusicPage()) {
-            this.hidePlayer();
-        } else if (this.currentSong) {
-            this.showPlayer();
+    toggleDetail(show) {
+        if (!this.detailOverlay) return;
+        if (show === undefined) show = !this.detailOverlay.classList.contains('show');
+        this.detailOverlay.classList.toggle('show', show);
+        if (show) this.updateDetailUI();
+    }
+
+    updateDetailUI() {
+        if (!this.detailOverlay || !this.currentSong) return;
+        const song = this.currentSong;
+        const cover = document.getElementById('fpDetailCover');
+        const name = document.getElementById('fpDetailName');
+        const artist = document.getElementById('fpDetailArtist');
+        const album = document.getElementById('fpDetailAlbum');
+        if (cover) cover.src = song.cover || '';
+        if (name) name.textContent = song.name || '--';
+        if (artist) artist.textContent = song.artist || '--';
+        if (album) album.textContent = song.album || '';
+
+        // 更新播放按钮图标
+        const playBtn = document.getElementById('fpDetailPlay');
+        if (playBtn) {
+            if (this.isPlaying) {
+                playBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+            } else {
+                playBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+            }
+        }
+
+        // 更新封面旋转
+        const coverEl = document.getElementById('fpDetailCover');
+        if (coverEl) {
+            if (this.isPlaying) coverEl.classList.add('playing');
+            else coverEl.classList.remove('playing');
+        }
+
+        // 加载歌词
+        if (song.id) this.loadLyric(song.id);
+    }
+
+    updateDetailProgress() {
+        if (!this.detailOverlay || !this.detailOverlay.classList.contains('show')) return;
+        const fill = document.getElementById('fpDetailProgressFill');
+        const ct = document.getElementById('fpDetailCurrentTime');
+        const tt = document.getElementById('fpDetailTotalTime');
+        if (fill && this.audio.duration) {
+            fill.style.width = (this.audio.currentTime / this.audio.duration) * 100 + '%';
+        }
+        if (ct) ct.textContent = this.formatTime(this.audio.currentTime);
+        if (tt) tt.textContent = this.formatTime(this.audio.duration);
+    }
+
+    loadLyric(songId) {
+        fetch('/music/api/lyric/' + songId)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('fpDetailLyricContainer');
+                if (!container) return;
+                if (!data.lrc || data.lrc.trim() === '') {
+                    container.innerHTML = '<div class="fp-lyric-empty">暂无歌词</div>';
+                    return;
+                }
+                const lines = data.lrc.split('\n');
+                const lyrics = [];
+                lines.forEach(line => {
+                    const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
+                    if (match) {
+                        const time = parseInt(match[1]) * 60 + parseInt(match[2]) + parseInt(match[3]) / (match[3].length === 3 ? 1000 : 100);
+                        lyrics.push({ time, text: match[4].trim() });
+                    }
+                });
+                lyrics.sort((a, b) => a.time - b.time);
+                this.detailLyrics = lyrics;
+                container.innerHTML = lyrics.map((l, i) =>
+                    `<div class="fp-lyric-line" data-index="${i}" onclick="window.floatingPlayer.seekToLyric(${i})">${l.text || '...'}</div>`
+                ).join('');
+            })
+            .catch(() => {});
+    }
+
+    seekToLyric(index) {
+        if (this.detailLyrics && this.detailLyrics[index]) {
+            this.audio.currentTime = this.detailLyrics[index].time;
+        }
+    }
+
+    updateDetailLyric() {
+        if (!this.detailOverlay || !this.detailOverlay.classList.contains('show')) return;
+        if (!this.detailLyrics || this.detailLyrics.length === 0) return;
+        const ct = this.audio.currentTime;
+        let activeIndex = -1;
+        for (let i = this.detailLyrics.length - 1; i >= 0; i--) {
+            if (ct >= this.detailLyrics[i].time) {
+                activeIndex = i;
+                break;
+            }
+        }
+        const lines = document.querySelectorAll('#fpDetailLyricContainer .fp-lyric-line');
+        lines.forEach((el, i) => {
+            el.classList.toggle('active', i === activeIndex);
+        });
+        // 自动滚动
+        if (activeIndex >= 0 && lines[activeIndex]) {
+            lines[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 
     expandPlayer() {
-        // 通过 AJAX 导航到音乐页面
-        if (window.AjaxNav) {
-            window.AjaxNav.navigateTo('/music');
-        } else {
-            window.location.href = "/music";
-        }
+        this.toggleDetail(true);
     }
 }
 

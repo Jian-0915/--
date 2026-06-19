@@ -1,4 +1,4 @@
-# 悦己 - 个人管理系统
+# 栖云阁 - 个人管理系统
 
 一个基于 Flask + PyWebView 的桌面端个人管理系统，集成网易云音乐搜索播放、图片库浏览、娱乐视频等功能，支持悬浮播放控制器实现跨页面后台播放。
 
@@ -53,7 +53,7 @@
 ```
 src/
 ├── app.py                      # Flask 应用主入口（路由、API、数据库）
-├── AccountManager.spec          # PyInstaller 打包配置
+├── 栖云阁.spec                  # PyInstaller 打包配置
 ├── requirements.txt             # Python 依赖
 ├── .gitignore
 ├── static/
@@ -73,6 +73,7 @@ src/
 │       ├── food/               # 美食
 │       └── ...
 └── templates/
+    ├── base.html               # 基础模板
     ├── login.html              # 登录页面
     ├── register.html           # 注册页面
     ├── dashboard.html          # 仪表盘（主页）
@@ -128,12 +129,12 @@ src/
 
 2. **执行打包**
    ```bash
-   pyinstaller AccountManager.spec
+   pyinstaller 栖云阁.spec
    ```
 
 3. **运行桌面应用**
 
-   打包完成后，`dist/AccountManager.exe` 即为独立可执行文件，双击运行即可打开桌面窗口。
+   打包完成后，`dist/栖云阁.exe` 即为独立可执行文件，双击运行即可打开桌面窗口。
 
    > 打包模式会自动启动 Flask 后台服务并打开 WebView 窗口，无需浏览器。
 

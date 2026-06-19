@@ -1343,7 +1343,7 @@ if __name__ == '__main__':
         
         # 创建 webview 窗口
         webview.create_window(
-            '悦己 - 个人管理系统',
+            '栖云阁 - 个人管理系统',
             'http://127.0.0.1:5000/',
             width=1200,
             height=800,

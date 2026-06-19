@@ -1,5 +1,5 @@
 /* ============================================
-   悦己 - 全局样式
+   栖云阁 - 全局样式
    ============================================ */
 
 /* --- 基础重置 --- */
@@ -471,7 +471,7 @@ a:hover {
     will-change: margin-left;
 }
 
-/* --- 子页面自动隐藏侧边栏，扩大内容区域 --- */
+/* --- 侧边栏自动隐藏（子页面） --- */
 body.sidebar-hidden .sidebar {
     transform: translateX(-100%);
     opacity: 0;
@@ -482,6 +482,7 @@ body.sidebar-hidden .main-content {
     margin-left: 0;
 }
 
+/* --- 顶部栏 --- */
 .top-bar {
     height: var(--topbar-height);
     padding: 0 32px;
@@ -1469,4 +1470,6 @@ body.sidebar-hidden .main-content {
     .floating-player .player-progress {
         min-width: 80px;
     }
+
+
 }

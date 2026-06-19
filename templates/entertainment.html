@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>娱乐板块 - 悦己</title>
+    <title>娱乐板块 - 栖云阁</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .entertainment-hero {
@@ -63,6 +63,9 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
 
         .feature-card::before {
@@ -185,7 +188,7 @@
                     <path d="M2 12l10 5 10-5"/>
                 </svg>
             </div>
-            <span class="sidebar-title">悦己</span>
+            <span class="sidebar-title">栖云阁</span>
         </div>
 
         <nav class="sidebar-nav">
@@ -259,7 +262,7 @@
 
         <div class="feature-grid">
             <!-- 功能卡片 1 -->
-            <div class="feature-card" onclick="window.location.href='{{ url_for('gallery') }}'" style="cursor: pointer;">
+            <a class="feature-card" href="{{ url_for('gallery') }}">
                 <div class="feature-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
@@ -270,10 +273,10 @@
                 <h4>图片画廊</h4>
                 <p>浏览精选图片合集，支持收藏与分享</p>
                 <span class="feature-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.2);">点击进入</span>
-            </div>
+            </a>
 
             <!-- 功能卡片 2 -->
-            <div class="feature-card" onclick="window.location.href='{{ url_for('music_player') }}'" style="cursor: pointer;">
+            <a class="feature-card" href="{{ url_for('music_player') }}">
                 <div class="feature-icon" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -283,7 +286,7 @@
                 <h4>音乐播放器</h4>
                 <p>在线音乐播放，创建个人播放列表</p>
                 <span class="feature-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.2);">点击进入</span>
-            </div>
+            </a>
 
             <!-- 功能卡片 3 -->
             <div class="feature-card">

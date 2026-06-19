@@ -1,14 +1,14 @@
 /**
- * AJAX 导航系统
- * 拦截页面内链接点击，通过 AJAX 加载新页面内容
- * 只替换 <aside> 和 <main> 区域，保留 <body> 上的持久元素（audio、悬浮播放器）
- * 从而实现跨页面音乐不中断播放
+ * AJAX 统一导航系统
+ * 所有页面统一使用 innerHTML 替换 <main> 内容
+ * 音乐播放不中断：floatingPlayer.audio 是 JS 对象，不在 DOM 中
+ * 悬浮播放器 UI 挂载在 document.body 上，不受 innerHTML 替换影响
  */
 (function() {
     'use strict';
 
     // 需要跳过的脚本（已加载，不重复执行）
-    const SKIP_SCRIPTS = ['floating_player.js', 'ajax_nav.js'];
+    const SKIP_SCRIPTS = ['floating_player.js', 'ajax_nav.js', 'app.js'];
 
     // 拦截链接点击
     document.addEventListener('click', function(e) {
@@ -32,28 +32,16 @@
         navigateTo(href);
     });
 
-    // 处理浏览器前进/后退
-    window.addEventListener('popstate', function(e) {
-        if (e.state && e.state.url) {
-            loadPage(e.state.url, false);
-        }
-    });
+    // 主页路径（侧边栏可见）
+    const HOME_URLS = ['/', '/dashboard'];
 
-    // 导航到指定URL
-    function navigateTo(url) {
-        loadPage(url, true);
+    // 判断是否为主页
+    function isHomePage(url) {
+        return HOME_URLS.some(h => url === h || url.endsWith(h));
     }
 
-    // 加载页面
-    async function loadPage(url, pushState) {
+    async function navigateTo(url) {
         try {
-            // 显示加载状态
-            const main = document.querySelector('main');
-            if (main) {
-                main.style.opacity = '0.5';
-                main.style.pointerEvents = 'none';
-            }
-
             const response = await fetch(url, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'same-origin'
@@ -64,98 +52,100 @@
                 return;
             }
 
-            if (!response.ok) {
-                throw new Error('HTTP ' + response.status);
-            }
+            if (!response.ok) throw new Error('HTTP ' + response.status);
 
             const html = await response.text();
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-
-            // 更新标题
-            document.title = doc.title;
-
-            // 替换 <aside> 侧边栏
-            const newAside = doc.querySelector('aside.sidebar');
-            const oldAside = document.querySelector('aside.sidebar');
-            if (newAside && oldAside) {
-                oldAside.innerHTML = newAside.innerHTML;
-            }
-
-            // 替换 <main> 主内容区域
             const newMain = doc.querySelector('main.main-content');
-            if (newMain && main) {
+
+            const main = document.querySelector('main.main-content');
+            if (main && newMain) {
                 main.innerHTML = newMain.innerHTML;
-                main.style.opacity = '1';
-                main.style.pointerEvents = '';
             }
 
-            // 注入页面特有的 <style>（来自 <head> 和 <body>）
-            const allStyles = [...doc.querySelectorAll('head style'), ...doc.querySelectorAll('body > style')];
-            allStyles.forEach(styleEl => {
-                const styleContent = styleEl.textContent.trim();
-                if (styleContent) {
-                    // 检查是否已存在相同样式
-                    const existing = document.querySelectorAll('style');
-                    let exists = false;
-                    existing.forEach(s => {
-                        if (s.textContent.trim() === styleContent) exists = true;
-                    });
-                    if (!exists) {
-                        document.head.appendChild(styleEl.cloneNode(true));
-                    }
-                }
-            });
+            // 注入页面特有的内联样式
+            injectPageStyles(doc, url);
 
-            // 执行页面脚本
-            const scripts = doc.querySelectorAll('script');
-            for (let i = 0; i < scripts.length; i++) {
-                const script = scripts[i];
-                const src = script.getAttribute('src');
+            // 执行脚本
+            executeScripts(doc, main);
 
-                if (src) {
-                    // 外部脚本：跳过 floating_player.js 和 ajax_nav.js
-                    const filename = src.split('/').pop();
-                    if (SKIP_SCRIPTS.includes(filename)) continue;
-
-                    // 重新执行外部脚本：先移除旧的，再添加新的
-                    const oldScript = document.querySelector('script[src*="' + filename + '"]');
-                    if (oldScript) oldScript.remove();
-
-                    const newScript = document.createElement('script');
-                    newScript.src = src;
-                    document.body.appendChild(newScript);
-                } else {
-                    // 内联脚本：重新执行
-                    const newScript = document.createElement('script');
-                    newScript.textContent = script.textContent;
-                    document.body.appendChild(newScript);
-                }
+            // 侧边栏自动隐藏/显示：主页显示，子板块隐藏
+            if (isHomePage(url)) {
+                document.body.classList.remove('sidebar-hidden');
+            } else {
+                document.body.classList.add('sidebar-hidden');
             }
 
-            // 更新 URL
-            if (pushState) {
-                history.pushState({ url: url }, '', url);
-            }
+            // 更新侧边栏激活状态
+            updateSidebarActiveState(url);
 
-            // 滚动到顶部
-            window.scrollTo(0, 0);
-
-            // 触发页面导航完成事件
+            // 触发事件
             window.dispatchEvent(new CustomEvent('pageNavigated', { detail: { url: url } }));
 
+            // 更新 URL
+            history.pushState({ url: url }, '', url);
+
         } catch (error) {
-            console.error('AJAX导航失败:', error);
-            // 失败时回退到正常跳转
+            console.error('导航失败:', error);
             window.location.href = url;
         }
     }
 
-    // 暴露导航函数供外部调用
-    window.AjaxNav = {
-        navigateTo: navigateTo
-    };
+    function executeScripts(doc, container) {
+        const scripts = doc.querySelectorAll('script');
+        scripts.forEach(script => {
+            const src = script.getAttribute('src');
+            if (src) {
+                const filename = src.split('/').pop();
+                if (SKIP_SCRIPTS.includes(filename)) return;
+                const newScript = document.createElement('script');
+                newScript.src = src;
+                container.appendChild(newScript);
+            } else {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                container.appendChild(newScript);
+            }
+        });
+    }
 
-    // 初始化时记录当前URL
+    // 注入页面特有的内联样式
+    function injectPageStyles(doc, url) {
+        // 移除之前注入的页面样式（避免累积）
+        document.querySelectorAll('style[data-page-style]').forEach(el => el.remove());
+
+        const styles = doc.querySelectorAll('head style');
+        styles.forEach(style => {
+            const newStyle = document.createElement('style');
+            newStyle.setAttribute('data-page-style', url);
+            newStyle.textContent = style.textContent;
+            document.head.appendChild(newStyle);
+        });
+    }
+
+    function updateSidebarActiveState(url) {
+        const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+        navItems.forEach(item => {
+            const href = item.getAttribute('href');
+            if (href && url.includes(href)) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // 处理浏览器前进/后退
+    window.addEventListener('popstate', function(e) {
+        if (e.state && e.state.url) {
+            navigateTo(e.state.url);
+        }
+    });
+
+    // 暴露导航函数
+    window.AjaxNav = { navigateTo: navigateTo };
+
+    // 初始化
     history.replaceState({ url: window.location.pathname }, '', window.location.pathname);
 })();
